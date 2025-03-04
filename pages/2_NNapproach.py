@@ -27,8 +27,7 @@ with tab1:
     st.write("*1.* Started by downloading the dataset from the website above.")
     st.write("*2.* Define path to dataset and then Load the dataset from the predefined path.")
     code = '''
-    dataset_path = "C:\\Username\\Downloads\\iris_dirty.csv"
-
+    dataset_path = r"C:\\Username\\Downloads\\iris_dirty.csv"
     try:
         df = pd.read_csv(dataset_path)
         # st.write("Dataset loaded successfully from the path.")
@@ -36,15 +35,21 @@ with tab1:
         st.error(f"Error loading dataset: ")'''
     st.code(code, language="python")
     # Define the path to your dataset 
-    dataset_path = r"C:\Users\Pang\Downloads\iris_dirty.csv"
 
-    try:
-        df = pd.read_csv(dataset_path)
-        # st.write("Dataset loaded successfully from the path.")
-    except Exception as e:
-        st.error(f"Error loading dataset: {e}")
 
-    st.write("*3.* Show Dataset Preview. The Preview is limit to 20 rows.")
+# Upload dataset using Streamlit's file uploader
+    uploaded_file = st.file_uploader("Upload your dataset", type=["csv"])
+
+    if uploaded_file is not None:
+        try:
+        # Read the CSV file directly from the uploaded file
+            df = pd.read_csv(uploaded_file)
+            st.write("Dataset loaded successfully!")
+            st.write(df.head(20))  # Show the first 20 rows of the dataframe
+        except Exception as e:
+            st.error(f"Error loading dataset: {e}")
+    else:
+        st.write("Please upload a CSV file.")
     code = '''
     st.subheader("Dataset Preview")
     st.write(df.head(20))'''
