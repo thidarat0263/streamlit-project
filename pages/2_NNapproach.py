@@ -1,14 +1,20 @@
 import pandas as pd
 import streamlit as st
 from sklearn.preprocessing import StandardScaler
+import plotly.express as px
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
 
 # Set up the Streamlit app title and description
-#st.sidebar.title("Navigation")
 st.sidebar.success("Select a page above.")
 st.title("Development Approach")
 st.subheader(":blue[Neural Network]")
 
-tab1, tab2,tab3 = st.tabs(["Dataset and Preparation Process", "NN Algorithms", "Model Development Procedure"])
+tab1, tab2, tab3 = st.tabs(["Dataset and Preparation Process", "NN Algorithms", "Model Development Procedure"])
+
 with tab1:
     st.write("The dataset is from website calls [Kaggle](https://www.kaggle.com). It's the Iris dirty dataset that contains measurements of different Iris species.")
     st.caption('The fact that it names "Dirty" data because it came with inconsistencies, missing values to practicing for data cleaning')
@@ -25,13 +31,14 @@ with tab1:
 
     st.markdown("### Data Preparation Process")
     st.write("*1.* Started by downloading the dataset from the website above.")
-    st.write("*2.* Upload the iris data set from githuub repository and then Load the preview that show the first 20 rows of the dataframe .")
+    st.write("*2.* Upload the iris data set from GitHub repository and then load the preview that shows the first 20 rows of the dataframe.")
+    
     code = '''
-    uploaded_file = st.file_uploader("Upload Iris dataset from github repository", type=["csv"])
+    uploaded_file = st.file_uploader("Upload Iris dataset from GitHub repository", type=["csv"])
 
     if uploaded_file is not None:
         try:
-        # Read the CSV file directly from the uploaded file
+            # Read the CSV file directly from the uploaded file
             df = pd.read_csv(uploaded_file)
             st.write("Dataset loaded successfully.")
             st.write(df.head(20))  # Show the first 20 rows of the dataframe
@@ -40,164 +47,172 @@ with tab1:
     else:
         st.write("Please upload a CSV file.")'''
     st.code(code, language="python")
-    # Define the path to your dataset 
-    uploaded_file = st.file_uploader("Upload Iris dataset from github repository", type=["csv"])
 
+    # Define the path to your dataset 
+    uploaded_file = st.file_uploader("Upload Iris dataset from GitHub repository", type=["csv"])
+
+    df = None  # Initialize df variable
     if uploaded_file is not None:
         try:
-        # Read the CSV file directly from the uploaded file
+            # Read the CSV file directly from the uploaded file
             df = pd.read_csv(uploaded_file)
             st.write("Dataset loaded successfully.")
             st.write(df.head(20))  # Show the first 20 rows of the dataframe
         except Exception as e:
             st.error(f"Error loading dataset: {e}")
-    else:
-        st.write("Please upload a CSV file.")
-    st.write("*3.* Show Dataset Preview. The Preview is limit to 20 rows.")
-    code = '''
-    st.subheader("Dataset Preview")
-    st.write(df.head(20))'''
-    st.code(code, language="python")
+    
+    if df is not None:
+        st.write("*3.* Show Dataset Preview. The Preview is limited to 20 rows.")
+        code = '''
+        st.subheader("Dataset Preview")
+        st.write(df.head(20))'''
+        st.code(code, language="python")
 
-    # Show dataset preview
-    st.subheader("Dataset Preview")
-    st.write(df.head(20))
+        # Show dataset preview
+        st.subheader("Dataset Preview")
+        st.write(df.head(20))
 
-    st.write("**4.** Write code checkbox for Check for missing values and if it checked then fill missing values with the mean of numeric columns.")
-    code = '''
-    st.subheader("Check for Missing Values")
-    missing_values = df.isnull().sum()
-    st.write(missing_values)
+        st.write("**4.** Write code checkbox for Check for missing values and if it checked then fill missing values with the mean of numeric columns.")
+        code = '''
+        st.subheader("Check for Missing Values")
+        missing_values = df.isnull().sum()
+        st.write(missing_values)
 
-    fill_missing = st.checkbox("Fill missing values with mean", value=True)
-    if fill_missing:
-        numeric_columns = df.select_dtypes(include=['number']).columns
-        df[numeric_columns] = df[numeric_columns].fillna(df[numeric_columns].mean())
-        st.write("Missing values filled with column mean for numeric columns.")
-    else:
-        st.write("No missing value filling applied.")'''
-    st.code(code, language="python")
+        fill_missing = st.checkbox("Fill missing values with mean", value=True)
+        if fill_missing:
+            numeric_columns = df.select_dtypes(include=['number']).columns
+            df[numeric_columns] = df[numeric_columns].fillna(df[numeric_columns].mean())
+            st.write("Missing values filled with column mean for numeric columns.")
+        else:
+            st.write("No missing value filling applied.")'''
+        st.code(code, language="python")
 
-    st.subheader("Check for Missing Values")
-    missing_values = df.isnull().sum()
-    st.write(missing_values)
+        st.subheader("Check for Missing Values")
+        missing_values = df.isnull().sum()
+        st.write(missing_values)
 
-    # Fill missing values with the mean of numeric columns if the checkbox is checked
-    fill_missing = st.checkbox("Fill missing values with mean", value=True)
-    if fill_missing:
-        # Select only numeric columns for filling missing values
-        numeric_columns = df.select_dtypes(include=['number']).columns
-        df[numeric_columns] = df[numeric_columns].fillna(df[numeric_columns].mean())
-        st.write("Missing values filled with column mean for numeric columns.")
-    else:
-        st.write("No missing value filling applied.")
+        # Fill missing values with the mean of numeric columns if the checkbox is checked
+        fill_missing = st.checkbox("Fill missing values with mean", value=True)
+        if fill_missing:
+            # Select only numeric columns for filling missing values
+            numeric_columns = df.select_dtypes(include=['number']).columns
+            df[numeric_columns] = df[numeric_columns].fillna(df[numeric_columns].mean())
+            st.write("Missing values filled with column mean for numeric columns.")
+        else:
+            st.write("No missing value filling applied.")
 
-    st.write(" **5.** Show Data Types and Normalized the Features (this is also the option).")
-    code = '''
-    st.subheader("Data Types")
-    data_types = df.dtypes
-    st.write(data_types)
+        st.write(" **5.** Show Data Types and Normalize the Features (this is also the option).")
+        code = '''
+        st.subheader("Data Types")
+        data_types = df.dtypes
+        st.write(data_types)
 
-    st.subheader("Normalize Features")
-    normalize = st.checkbox("Normalize Features", value=True)
+        st.subheader("Normalize Features")
+        normalize = st.checkbox("Normalize Features", value=True)
 
-    if normalize:
-        # Select only numeric columns 
-        numeric_columns = df.select_dtypes(include=['number']).columns
-        X = df[numeric_columns]  # Only numeric columns should be scaled
-        
-        # Standardize the numeric columns
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
-        
-        # Create a DataFrame from the scaled values
-        df_scaled = pd.DataFrame(X_scaled, columns=numeric_columns)
-        
-        # Keep the non-numeric columns in the final DataFrame
+        if normalize:
+            # Select only numeric columns 
+            numeric_columns = df.select_dtypes(include=['number']).columns
+            X = df[numeric_columns]  # Only numeric columns should be scaled
+
+            # Standardize the numeric columns
+            scaler = StandardScaler()
+            X_scaled = scaler.fit_transform(X)
+
+            # Create a DataFrame from the scaled values
+            df_scaled = pd.DataFrame(X_scaled, columns=numeric_columns)
+
+            # Keep the non-numeric columns in the final DataFrame
+            if 'species' in df.columns:
+                df_scaled['species'] = df['species']
+
+            st.write("Features normalized using StandardScaler.")
+            st.write(df_scaled.head())
+        else:
+            st.write("Features not normalized.")
+            st.write(df.head())'''
+        st.code(code, language="python")
+
+        st.subheader("Data Types")
+        data_types = df.dtypes
+        st.write(data_types)
+
+        # Normalize the Features
+        st.subheader("Normalize Features")
+        normalize = st.checkbox("Normalize Features", value=True)
+
+        if normalize:
+            # Select only numeric columns (exclude 'species' or other non-numeric columns)
+            numeric_columns = df.select_dtypes(include=['number']).columns
+            X = df[numeric_columns]  # Only numeric columns should be scaled
+
+            # Standardize the numeric columns
+            scaler = StandardScaler()
+            X_scaled = scaler.fit_transform(X)
+
+            # Create a DataFrame from the scaled values
+            df_scaled = pd.DataFrame(X_scaled, columns=numeric_columns)
+
+            # Keep the non-numeric columns (like 'species') in the final DataFrame
+            if 'species' in df.columns:
+                df_scaled['species'] = df['species']
+
+            st.write("Features normalized using StandardScaler.")
+            st.write(df_scaled.head())
+        else:
+            st.write("Features not normalized.")
+            st.write(df.head())
+
+        st.write("**6.** Show the Cleaned Dataset with limit preview only 20 rows.")
+        code = '''
+        st.subheader("Cleaned Dataset Preview")
+        st.write(df.head(20))'''
+        st.code(code, language="python")
+
+        # Show cleaned dataset
+        st.subheader("Cleaned Dataset Preview")
+        st.write(df.head(20))
+
+        st.write("Additional: Code for option to download the cleaned dataset.")
+        code = '''
+        st.download_button(
+            label="Download Cleaned Dataset",
+            data=df.to_csv(index=False).encode(),
+            file_name="cleaned_iris.csv",
+            mime="text/csv"
+        )'''
+        st.code(code, language="python")
+
+        st.download_button(
+            label="Download Cleaned Dataset",
+            data=df.to_csv(index=False).encode(),
+            file_name="cleaned_iris.csv",
+            mime="text/csv"
+        )
+
+        st.write("**7.** Convert the 'species' column to string if it's not already and ensure that all columns have consistent data types. then display the cleaned dataset (again).")
+        code = '''
         if 'species' in df.columns:
-            df_scaled['species'] = df['species']
-        
-        st.write("Features normalized using StandardScaler.")
-        st.write(df_scaled.head())
-    else:
-        st.write("Features not normalized.")
-        st.write(df.head())'''
-    st.code(code, language="python")
+            df['species'] = df['species'].astype(str)
 
-    st.subheader("Data Types")
-    data_types = df.dtypes
-    st.write(data_types)
+        df = df.convert_dtypes()
 
-    # Normalize the Features
-    st.subheader("Normalize Features")
-    normalize = st.checkbox("Normalize Features", value=True)
+        st.write("Cleaned DataFrame for Display")
+        st.write(df)'''
+        st.code(code, language="python")
 
-    if normalize:
-        # Select only numeric columns (exclude 'species' or other non-numeric columns)
-        numeric_columns = df.select_dtypes(include=['number']).columns
-        X = df[numeric_columns]  # Only numeric columns should be scaled
-        
-        # Standardize the numeric columns
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
-        
-        # Create a DataFrame from the scaled values
-        df_scaled = pd.DataFrame(X_scaled, columns=numeric_columns)
-        
-        # Keep the non-numeric columns (like 'species') in the final DataFrame
+        # Ensure proper data types before displaying or downloading
         if 'species' in df.columns:
-            df_scaled['species'] = df['species']
-        
-        st.write("Features normalized using StandardScaler.")
-        st.write(df_scaled.head())
-    else:
-        st.write("Features not normalized.")
-        st.write(df.head())
+            df['species'] = df['species'].astype(str)
 
-    st.write("**6.** Show the Cleaned Dataset with limit preview only 20 rows.")
-    code = '''
-    st.subheader("Cleaned Dataset Preview")
-    st.write(df.head(20))'''
-    st.code(code,language="python")
-    # Show cleaned dataset
-    st.subheader("Cleaned Dataset Preview")
-    st.write(df.head(20))
+        # Ensure all columns have consistent data types
+        df = df.convert_dtypes()
 
-    st.write("Additional: Code for option to download the cleaned dataset.")
-    code = '''
-    st.download_button(
-        label="Download Cleaned Dataset",
-        data=df.to_csv(index=False).encode(),
-        file_name="cleaned_iris.csv",
-        mime="text/csv"
-    )'''
-    st.code(code,language="python")
-    st.download_button(
-        label="Download Cleaned Dataset",
-        data=df.to_csv(index=False).encode(),
-        file_name="cleaned_iris.csv",
-        mime="text/csv"
-    )
-    st.write("**7.** Convert the 'species' column to string if it's not already and ensure that all columns have consistent data types. then display the cleaned dataset (again).")
-    code = '''
-    if 'species' in df.columns:
-        df['species'] = df['species'].astype(str)
+        # Display the cleaned dataset
+        st.write("Cleaned DataFrame for Display")
+        st.write(df)
 
-    df = df.convert_dtypes()
 
-    st.write("Cleaned DataFrame for Display")
-    st.write(df)'''
-    st.code(code, language="python")
-    # Ensure proper data types before displaying or downloading
-    if 'species' in df.columns:
-        df['species'] = df['species'].astype(str)
-
-    # Ensure all columns have consistent data types
-    df = df.convert_dtypes()
-
-    #Display the cleaned dataset
-    st.write("Cleaned DataFrame for Display")
-    st.write(df)
 with tab2:
     st.markdown("### Algorithm")
     st.write("**Feedforward Neural Network algorithm have been chosen for Neural Network model.** ")
