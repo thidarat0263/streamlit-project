@@ -33,7 +33,7 @@ with tab1:
         try:
         # Read the CSV file directly from the uploaded file
             df = pd.read_csv(uploaded_file)
-            st.write("Dataset loaded successfully!")
+            st.write("Dataset loaded successfully.")
             st.write(df.head(20))  # Show the first 20 rows of the dataframe
         except Exception as e:
             st.error(f"Error loading dataset: {e}")
@@ -43,16 +43,18 @@ with tab1:
     # Define the path to your dataset 
     uploaded_file = st.file_uploader("Upload Iris dataset from github repository", type=["csv"])
 
+    df = None
     if uploaded_file is not None:
         try:
         # Read the CSV file directly from the uploaded file
             df = pd.read_csv(uploaded_file)
-            st.write("Dataset loaded successfully!")
+            st.write("Dataset loaded successfully.")
             st.write(df.head(20))  # Show the first 20 rows of the dataframe
         except Exception as e:
             st.error(f"Error loading dataset: {e}")
     else:
         st.write("Please upload a CSV file.")
+    st.write("*3.* Show Dataset Preview. The Preview is limit to 20 rows.")
     code = '''
     st.subheader("Dataset Preview")
     st.write(df.head(20))'''
