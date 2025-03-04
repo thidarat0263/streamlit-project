@@ -43,7 +43,6 @@ with tab1:
     # Define the path to your dataset 
     uploaded_file = st.file_uploader("Upload Iris dataset from github repository", type=["csv"])
 
-    df = None
     if uploaded_file is not None:
         try:
         # Read the CSV file directly from the uploaded file
