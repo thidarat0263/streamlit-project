@@ -25,20 +25,23 @@ with tab1:
 
     st.markdown("### Data Preparation Process")
     st.write("*1.* Started by downloading the dataset from the website above.")
-    st.write("*2.* Define path to dataset and then Load the dataset from the predefined path.")
+    st.write("*2.* Upload the iris data set from githuub repository and then Load the preview that show the first 20 rows of the dataframe .")
     code = '''
-    dataset_path = r"C:\\Username\\Downloads\\iris_dirty.csv"
-    try:
-        df = pd.read_csv(dataset_path)
-        # st.write("Dataset loaded successfully from the path.")
-    except Exception as e:
-        st.error(f"Error loading dataset: ")'''
+    uploaded_file = st.file_uploader("Upload Iris dataset from github repository", type=["csv"])
+
+    if uploaded_file is not None:
+        try:
+        # Read the CSV file directly from the uploaded file
+            df = pd.read_csv(uploaded_file)
+            st.write("Dataset loaded successfully!")
+            st.write(df.head(20))  # Show the first 20 rows of the dataframe
+        except Exception as e:
+            st.error(f"Error loading dataset: {e}")
+    else:
+        st.write("Please upload a CSV file.")'''
     st.code(code, language="python")
     # Define the path to your dataset 
-
-
-# Upload dataset using Streamlit's file uploader
-    uploaded_file = st.file_uploader("Upload your dataset", type=["csv"])
+    uploaded_file = st.file_uploader("Upload Iris dataset from github repository", type=["csv"])
 
     if uploaded_file is not None:
         try:
