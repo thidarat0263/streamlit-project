@@ -1,2 +1,2 @@
 # streamlit-project
-# requirement.txt
+# requirements.txt
